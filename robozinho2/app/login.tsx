@@ -22,7 +22,7 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
 
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="Digite seu email"
         placeholderTextColor="#FFFFFF"
@@ -38,11 +38,11 @@ export default function LoginScreen() {
         secureTextEntry={true}
         value={password}
         onChangeText={setPassword}
-      />
-
+      /> */}
+{/* 
       <Button title="Login" onPress={handleLogin} />
 
-      <Text style={styles.orText}>ou</Text>
+      <Text style={styles.orText}>ou</Text> */}
 
       <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
         <Image
