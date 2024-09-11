@@ -15,6 +15,7 @@ type ItemData = {
   tema: string;
   assunto: string;
   destinatario: string;
+  status: string;  // Adicionado para controle de status
 };
 
 const DATA: ItemData[] = [
@@ -23,18 +24,21 @@ const DATA: ItemData[] = [
     tema: 'bicicleta',
     assunto: 'ASSUNTO 1',
     destinatario: 'DESTINATARIO 1',
+    status: 'Enviado',
   },
   {
     id: '2',
     tema: 'carro',
     assunto: 'ASSUNTO 2',
     destinatario: 'DESTINATARIO 2',
+    status: 'Pendente',
   },
   {
     id: '3',
     tema: 'moto',
     assunto: 'ASSUNTO 3',
     destinatario: 'DESTINATARIO 3',
+    status: 'Não Enviado',
   },
 ];
 
@@ -58,44 +62,45 @@ const Item = ({ item, backgroundColor, barColor, textColor }: ItemProps) => (
 
 const App = () => {
   const [searchText, setSearchText] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [filteredData, setFilteredData] = useState(DATA);
 
   const filterData = (text: string) => {
+    let newData = DATA;
     if (text) {
-      const newData = DATA.filter(item => {
-        const itemData = `${item.tema.toUpperCase()} ${item.assunto.toUpperCase()} ${item.destinatario.toUpperCase()}`;
-        const textData = text.toUpperCase();
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredData(newData);
-    } else {
-      setFilteredData(DATA);
+      newData = newData.filter(item => `${item.tema.toUpperCase()} ${item.assunto.toUpperCase()} ${item.destinatario.toUpperCase()}`.includes(text.toUpperCase()));
     }
-    setSearchText(text);
+    if (selectedStatus) {
+      newData = newData.filter(item => item.status === selectedStatus);
+    }
+    setFilteredData(newData);
+  };
+
+  const handleStatusFilter = (status: string | null) => {
+    setSelectedStatus(status);
+    filterData(searchText);
   };
 
   const renderItem = ({ item }: { item: ItemData }) => {
-    let backgroundColor, barColor, textColor;
-    switch (item.id) {
-      case '1':
-        backgroundColor = '#FDECEC'; // Fundo rosa claro
-        barColor = '#FF6961'; // Barra vermelha
-        textColor = '#FF6961'; // Texto vermelho
+    let backgroundColor = '#FDECEC'; // Default
+    let barColor = '#FF6961';
+    let textColor = '#FF6961';
+    switch (item.status) {
+      case 'Enviado':
+        backgroundColor = '#E0FFE0';
+        barColor = '#28A745';
+        textColor = '#77DD77';
         break;
-      case '2':
-        backgroundColor = '#E0FFE0'; // Fundo verde claro
-        barColor = '#77DD77'; // Barra verde
-        textColor = '#77DD77'; // Texto verde
+      case 'Pendente':
+        backgroundColor = '#FFF3CD';
+        barColor = '#FFC107';
+        textColor = '#FFB347';
         break;
-      case '3':
-        backgroundColor = '#FFF5E1'; // Fundo laranja claro
-        barColor = '#FFB347'; // Barra laranja
-        textColor = '#FFB347'; // Texto laranja
+      case 'Não Enviado':
+        backgroundColor = '#F8D7DA';
+        barColor = '#CC0000';
+        textColor = '#ED0000';
         break;
-      default:
-        backgroundColor = '#f9c2ff';
-        barColor = '#000';
-        textColor = '#000';
     }
     return (
       <Item
@@ -109,12 +114,32 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+
       <TextInput
         style={styles.searchBar}
         placeholder="Filtrar por tema, assunto ou destinatário"
         value={searchText}
-        onChangeText={text => filterData(text)}
+        onChangeText={text => {
+          setSearchText(text);
+          filterData(text);
+        }}
       />
+
+      <View style={styles.filterContainer}>
+        <TouchableOpacity onPress={() => handleStatusFilter('Enviado')} style={[styles.filterButton, { backgroundColor: '#28A745' }]}>
+          <Text style={styles.filterText}>Enviado</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleStatusFilter('Pendente')} style={[styles.filterButton, { backgroundColor: '#FFC107' }]}>
+          <Text style={styles.filterText}>Pendente</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleStatusFilter('Não Enviado')} style={[styles.filterButton, { backgroundColor: '#CC0000' }]}>
+          <Text style={styles.filterText}>Não Enviado</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleStatusFilter(null)} style={[styles.filterButton, { backgroundColor: 'gray' }]}>
+          <Text style={styles.filterText}>Todos</Text>
+        </TouchableOpacity>
+      </View>
+      
       <FlatList
         data={filteredData}
         renderItem={renderItem}
@@ -132,8 +157,6 @@ const styles = StyleSheet.create({
   searchBar: {
     backgroundColor: '#FFFFFF', // Cor de fundo branco
     height: 50,
-    borderColor: 'red',
-    borderWidth: 1,
     margin: 20,
     paddingHorizontal: 25,
     borderRadius: 20,
@@ -158,9 +181,23 @@ const styles = StyleSheet.create({
   },
   subtext: {
     fontSize: 16,
-    color: '#C0C0C0',
+    color: '#000',
     marginTop: 4,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginBottom: 10,
+  },
+  filterButton: {
+    padding: 13,
+    borderRadius: 15,
+  },
+  filterText: {
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
 
 export default App;
+

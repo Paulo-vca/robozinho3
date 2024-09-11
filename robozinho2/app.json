@@ -4,20 +4,21 @@
     "slug": "robozinho2",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/robo/chat123.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/robo/rbz.png",
+      "image": "./assets/images/robo/chat123.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#005FED"
+      
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/robo/chat123.png",
         "backgroundColor": "#ffffff"
       }
     },

@@ -106,17 +106,17 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: '#FF0000',
+    borderColor: '#959595',
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     color: '#000000', // Cor do texto
     backgroundColor: '#FFFFFF', // Cor do fundo
   },
   textArea: {
     height: 100,
-    borderColor: '#FF0000',
+    borderColor: '#959595',
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 20,
