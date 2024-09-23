@@ -49,11 +49,11 @@ function Submit(data: FormData) {
     });
 }
 
-export default function TabTwoScreen({ addItem }: { addItem: (data: FormData) => void }) {
+export default function TabTwoScreen() {
   const {
     control,
     handleSubmit,
-    reset,
+    reset,  // Usado para limpar o formulário
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -61,8 +61,7 @@ export default function TabTwoScreen({ addItem }: { addItem: (data: FormData) =>
 
   const onSubmit = (data: FormData) => {
     Submit(data);
-    addItem(data); // Adiciona o item na lista
-    reset(); // Limpa o formulário
+    reset();  // Limpa o formulário após o envio
   };
 
   return (
@@ -104,7 +103,7 @@ export default function TabTwoScreen({ addItem }: { addItem: (data: FormData) =>
           <TextInput
             style={[styles.textArea, errors.mensagem && styles.errorBorder]}
             placeholder="MENSAGEM"
-            multiline
+            multiline={true}
             numberOfLines={10}
             value={value}
             onChangeText={onChange}
