@@ -11,7 +11,6 @@
       "image": "./assets/images/robo/chat123.png",
       "resizeMode": "contain",
       "backgroundColor": "#005FED"
-      
     },
     "ios": {
       "supportsTablet": true
@@ -20,18 +19,22 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/robo/chat123.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.misscoding.firebasesignin"
+      
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/robo/chat123.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
     }
+    
   }
 }

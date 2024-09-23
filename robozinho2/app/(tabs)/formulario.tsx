@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, TextInput, Alert, TouchableOpacity, Text } from 'react-native';
 import { View } from '@/components/Themed';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { send } from '@emailjs/react-native';
 
+// Validação de formulário
 const schema = yup.object().shape({
   destinatario: yup.string().email('Digite um e-mail válido').required('Destinatário é obrigatório'),
   assunto: yup.string().required('Assunto é obrigatório'),
@@ -13,24 +15,58 @@ const schema = yup.object().shape({
   obs: yup.string().optional(),
 });
 
-export default function TabTwoScreen() {
+type FormData = {
+  destinatario: string;
+  assunto: string;
+  mensagem: string;
+  envio: string;
+  obs?: string; // Campo opcional
+};
+
+// Função para enviar os dados por e-mail via EmailJS
+function Submit(data: FormData) {
+  send(
+    'gmailMessage',    // Substitua pelo seu Service ID do EmailJS
+    'template_0vvy7bk',   // Substitua pelo Template ID criado no EmailJS
+    {
+      destinatario: data.destinatario,
+      assunto: data.assunto,
+      mensagem: data.mensagem,
+      envio: data.envio,
+      obs: data.obs || '',
+    },
+    {
+      publicKey: 'XG5SZd2iXVfm7_JUi', // Substitua pela Public Key obtida no EmailJS
+    }
+  )
+    .then((result) => {
+      console.log('Email enviado com sucesso:', result.status, result.text);
+      Alert.alert('Sucesso', 'Email enviado com sucesso!');
+    })
+    .catch((error) => {
+      console.log('Erro ao enviar e-mail:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao enviar o email.');
+    });
+}
+
+export default function TabTwoScreen({ addItem }: { addItem: (data: FormData) => void }) {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
-    console.log('Formulário enviado com os seguintes dados:', data);
-    Alert.alert('Sucesso', 'Formulário enviado com sucesso');
+  const onSubmit = (data: FormData) => {
+    Submit(data);
+    addItem(data); // Adiciona o item na lista
+    reset(); // Limpa o formulário
   };
 
   return (
-    
     <View style={styles.container}>
-
       <Text style={styles.title}>Nova Mensagem</Text>
 
       <Controller
@@ -68,7 +104,7 @@ export default function TabTwoScreen() {
           <TextInput
             style={[styles.textArea, errors.mensagem && styles.errorBorder]}
             placeholder="MENSAGEM"
-            multiline={true}
+            multiline
             numberOfLines={10}
             value={value}
             onChangeText={onChange}
@@ -111,8 +147,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     paddingHorizontal: 15,
-    color: '#000000', // Cor do texto
-    backgroundColor: '#FFFFFF', // Cor do fundo
+    color: '#000000',
+    backgroundColor: '#FFFFFF',
   },
   textArea: {
     height: 100,
@@ -121,9 +157,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     paddingHorizontal: 10,
-    color: '#000000', // Cor do texto
-    backgroundColor: '#FFFFFF', // Cor do fundo
-    textAlignVertical: 'top',
+    color: '#000000',
+    backgroundColor: '#FFFFFF',
+    verticalAlign: 'top',
   },
   button: {
     height: 50,

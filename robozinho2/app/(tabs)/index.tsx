@@ -62,8 +62,8 @@ const Item = ({ item, backgroundColor, barColor, textColor }: ItemProps) => (
 
 const App = () => {
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState(null);
   const [filteredData, setFilteredData] = useState(DATA);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
   const filterData = (text: string) => {
     let newData = DATA;
@@ -75,11 +75,12 @@ const App = () => {
     }
     setFilteredData(newData);
   };
-
+  
   const handleStatusFilter = (status: string | null) => {
-    setSelectedStatus(status);
-    filterData(searchText);
-  };
+  setSelectedStatus(status);  // status pode ser string ou null
+  filterData(searchText);     // Chama a função de filtro com o valor atualizado
+};
+
 
   const renderItem = ({ item }: { item: ItemData }) => {
     let backgroundColor = '#FDECEC'; // Default

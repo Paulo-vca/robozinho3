@@ -1,3 +1,42 @@
+// import { useEffect } from "react";
+// import { ActivityIndicator } from "react-native";
+// import { router, Slot } from "expo-router";
+// import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+// import { tokenCache } from "@/src/storage/tokenCache";
+
+// const PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string;
+
+// function InitialLayout() {
+//   const { isSignedIn, isLoaded } = useAuth();
+
+//   useEffect(() => {
+//     if (!isLoaded) return;
+
+//     if (isSignedIn) {
+//       // Redirecionar para a pasta "tabs" após o login
+//       router.replace("/(auth)");
+//     } else {
+//       router.replace("/(public)/login");
+//     }
+//   }, [isSignedIn, isLoaded]);
+
+//   return isLoaded ? <Slot /> : (
+//     <ActivityIndicator style={{ flex: 1, justifyContent: "center", alignItems: "center" }} />
+//   );
+// }
+
+// export default function Layout() {
+//   return (
+//     <ClerkProvider 
+//       publishableKey={PUBLIC_CLERK_PUBLISHABLE_KEY} 
+//       tokenCache={tokenCache}
+//     >
+//       <InitialLayout />
+//     </ClerkProvider>
+//   );
+// }
+
+
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -51,9 +90,8 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* <Stack.Screen name="login" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="filtro" options={{ presentation: 'modal' }} /> */}
       </Stack>
     </ThemeProvider>
   );

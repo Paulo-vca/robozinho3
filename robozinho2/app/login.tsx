@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, Button, TouchableOpacity, Image } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { useRouter,Link } from 'expo-router';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  
   const handleLogin = () => {
-    // Lógica para processar o login
     console.log('Login attempt with:');
     console.log(`Email: ${email}`);
     console.log(`Password: ${password}`);
@@ -17,6 +18,11 @@ export default function LoginScreen() {
     // Lógica para adicionar a conta do Google
     console.log('Google Sign-In button clicked');
   };
+
+  const handleImageClick = () => {
+    router.replace('/(tabs)'); 
+  };
+ 
 
   return (
     <View style={styles.container}>
@@ -43,11 +49,12 @@ export default function LoginScreen() {
       <Button title="Login" onPress={handleLogin} />
 
       <Text style={styles.orText}>ou</Text> */}
-
-      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+      
+      <TouchableOpacity style={styles.googleButton} onPress={handleImageClick}>
         <Image
           source={{ uri: 'https://t.ctcdn.com.br/lvns56iaSMyHvyTur4JeYS_NYeY=/i606944.png' }}
           style={styles.googleIcon}
+          
         />
         <Text style={styles.googleButtonText}>Adicionar conta do Google</Text>
       </TouchableOpacity>
