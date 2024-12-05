@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, TextInput, Alert, TouchableOpacity, Text } from 'react-native';
-import { View } from '@/components/Themed';
+import React from 'react';
+import { StyleSheet, TextInput, Alert, TouchableOpacity, Text, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -136,8 +135,9 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 25,
     justifyContent: 'center',
+    backgroundColor: '#ffff'
   },
   input: {
     height: 50,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 50,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#080165',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000',
   },
   title: {
-    color: '#FF0000',
+    color: '#082591',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,

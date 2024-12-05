@@ -153,14 +153,16 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
+    backgroundColor: '#FFFFFF'
   },
   searchBar: {
-    backgroundColor: '#FFFFFF', // Cor de fundo branco
+    backgroundColor: '#fff', // Cor de fundo amarelo (mude para branco se necessário)
+    borderColor: '#959595', // Cor da borda
+    borderWidth: 1, // Define a largura da borda
     height: 50,
     margin: 20,
     paddingHorizontal: 25,
-    borderRadius: 20,
+    borderRadius: 10, // Arredondamento dos cantos
   },
   item: {
     flexDirection: 'row',
