@@ -5,6 +5,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { send } from '@emailjs/react-native';
 
+import appendDataToSheet from '@/credentials/googleSheetsService'; // Importe o serviço criado
+
+const handleSubmit = async () => {
+  const data = [destinatario, assunto, mensagem, dataParaEnvio]; // Dados do formulário
+  try {
+    await appendDataToSheet(data);
+    alert("Dados cadastrados com sucesso!");
+  } catch (error) {
+    alert("Erro ao cadastrar os dados.");
+    console.error(error);
+  }
+};
+
 // Validação de formulário
 const schema = yup.object().shape({
   destinatario: yup.string().email('Digite um e-mail válido').required('Destinatário é obrigatório'),

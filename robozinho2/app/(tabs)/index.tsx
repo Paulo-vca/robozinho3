@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 
+import { Ionicons } from '@expo/vector-icons';
+
 type ItemData = {
   id: string;
   tema: string;
@@ -75,11 +77,11 @@ const App = () => {
     }
     setFilteredData(newData);
   };
-  
+
   const handleStatusFilter = (status: string | null) => {
-  setSelectedStatus(status);  // status pode ser string ou null
-  filterData(searchText);     // Chama a função de filtro com o valor atualizado
-};
+    setSelectedStatus(status);
+    filterData(searchText);     // Chama a função de filtro com o valor atualizado
+  };
 
 
   const renderItem = ({ item }: { item: ItemData }) => {
@@ -116,15 +118,18 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container}>
 
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Filtrar por tema, assunto ou destinatário"
-        value={searchText}
-        onChangeText={text => {
-          setSearchText(text);
-          filterData(text);
-        }}
-      />
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={24} color="#959595" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Filtrar por tema, assunto ou destinatário"
+          value={searchText}
+          onChangeText={text => {
+            setSearchText(text);
+            filterData(text);
+          }}
+        />
+      </View>
 
       <View style={styles.filterContainer}>
         <TouchableOpacity onPress={() => handleStatusFilter('Enviado')} style={[styles.filterButton, { backgroundColor: '#28A745' }]}>
@@ -140,7 +145,7 @@ const App = () => {
           <Text style={styles.filterText}>Todos</Text>
         </TouchableOpacity>
       </View>
-      
+
       <FlatList
         data={filteredData}
         renderItem={renderItem}
@@ -155,14 +160,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF'
   },
-  searchBar: {
-    backgroundColor: '#fff', // Cor de fundo amarelo (mude para branco se necessário)
-    borderColor: '#959595', // Cor da borda
-    borderWidth: 1, // Define a largura da borda
-    height: 50,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderColor: '#005FED',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 15,
     margin: 20,
-    paddingHorizontal: 25,
-    borderRadius: 10, // Arredondamento dos cantos
+    height: 50,
+  },
+  searchIcon: {
+    marginRight: 10,
+    color: '#005FED',
+  },
+  searchBar: {
+    flex: 1,
+    color: '#000',
   },
   item: {
     flexDirection: 'row',
