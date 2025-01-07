@@ -1,165 +1,123 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  FlatList,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
-
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 
-type ItemData = {
-  id: string;
-  tema: string;
-  assunto: string;
-  destinatario: string;
-  status: string;  // Adicionado para controle de status
-};
-
-const DATA: ItemData[] = [
-  {
-    id: '1',
-    tema: 'bicicleta',
-    assunto: 'ASSUNTO 1',
-    destinatario: 'DESTINATARIO 1',
-    status: 'Enviado',
-  },
-  {
-    id: '2',
-    tema: 'carro',
-    assunto: 'ASSUNTO 2',
-    destinatario: 'DESTINATARIO 2',
-    status: 'Pendente',
-  },
-  {
-    id: '3',
-    tema: 'moto',
-    assunto: 'ASSUNTO 3',
-    destinatario: 'DESTINATARIO 3',
-    status: 'Não Enviado',
-  },
-];
-
-type ItemProps = {
-  item: ItemData;
-  backgroundColor: string;
-  barColor: string;
-  textColor: string;
-};
-
-const Item = ({ item, backgroundColor, barColor, textColor }: ItemProps) => (
-  <View style={[styles.item, { backgroundColor }]}>
-    <View style={[styles.bar, { backgroundColor: barColor }]} />
-    <View style={styles.textContainer}>
-      <Text style={[styles.tema, { color: textColor }]}>{item.tema}</Text>
-      <Text style={styles.subtext}>{item.assunto}</Text>
-      <Text style={styles.subtext}>{item.destinatario}</Text>
-    </View>
-  </View>
-);
-
-const App = () => {
+export default function ListaScreen() {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [filteredData, setFilteredData] = useState(DATA);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const filterData = (text: string) => {
-    let newData = DATA;
-    if (text) {
-      newData = newData.filter(item => `${item.tema.toUpperCase()} ${item.assunto.toUpperCase()} ${item.destinatario.toUpperCase()}`.includes(text.toUpperCase()));
+  // Função para buscar dados do backend
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get('http://localhost:3000/google-sheets-data');
+        setData(response.data);
+        setFilteredData(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erro ao buscar dados da planilha:', error);
+        setLoading(false);
+      }
     }
-    if (selectedStatus) {
-      newData = newData.filter(item => item.status === selectedStatus);
-    }
-    setFilteredData(newData);
-  };
 
-  const handleStatusFilter = (status: string | null) => {
-    setSelectedStatus(status);
-    filterData(searchText);     // Chama a função de filtro com o valor atualizado
-  };
+    fetchData();
+  }, []);
 
+  // Lógica de filtro
+  useEffect(() => {
+    const filtered = data.filter((item) => {
+      const matchesSearch = `${item.assunto} ${item.destinatario}`
+        .toUpperCase()
+        .includes(searchText.toUpperCase());
+      const matchesStatus = selectedStatus ? item.status === selectedStatus : true;
 
-  const renderItem = ({ item }: { item: ItemData }) => {
-    let backgroundColor = '#FDECEC'; // Default
-    let barColor = '#FF6961';
-    let textColor = '#FF6961';
-    switch (item.status) {
-      case 'Enviado':
-        backgroundColor = '#E0FFE0';
-        barColor = '#28A745';
-        textColor = '#77DD77';
-        break;
-      case 'Pendente':
-        backgroundColor = '#FFF3CD';
-        barColor = '#FFC107';
-        textColor = '#FFB347';
-        break;
-      case 'Não Enviado':
-        backgroundColor = '#F8D7DA';
-        barColor = '#CC0000';
-        textColor = '#ED0000';
-        break;
-    }
+      return matchesSearch && matchesStatus;
+    });
+
+    setFilteredData(filtered);
+  }, [searchText, selectedStatus, data]);
+
+  const renderItem = ({ item }: any) => (
+    <View style={[styles.item, styles[item.status]]}>
+      <Text>{item.assunto}</Text>
+      <Text>{item.destinatario}</Text>
+      <Text>{item.status}</Text>
+    </View>
+  );
+
+  if (loading) {
     return (
-      <Item
-        item={item}
-        backgroundColor={backgroundColor}
-        barColor={barColor}
-        textColor={textColor}
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#005FED" />
+      </View>
     );
-  };
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-
+    <View style={styles.container}>
+      {/* Barra de pesquisa */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={24} color="#959595" style={styles.searchIcon} />
         <TextInput
           style={styles.searchBar}
-          placeholder="Filtrar por tema, assunto ou destinatário"
+          placeholder="Filtrar por assunto ou destinatário"
           value={searchText}
-          onChangeText={text => {
-            setSearchText(text);
-            filterData(text);
-          }}
+          onChangeText={(text) => setSearchText(text)}
         />
       </View>
 
+      {/* Botões de filtro */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity onPress={() => handleStatusFilter('Enviado')} style={[styles.filterButton, { backgroundColor: '#28A745' }]}>
+        <TouchableOpacity
+          onPress={() => setSelectedStatus('Enviado')}
+          style={[styles.filterButton, { backgroundColor: '#28A745' }]}
+        >
           <Text style={styles.filterText}>Enviado</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleStatusFilter('Pendente')} style={[styles.filterButton, { backgroundColor: '#FFC107' }]}>
+        <TouchableOpacity
+          onPress={() => setSelectedStatus('Pendente')}
+          style={[styles.filterButton, { backgroundColor: '#FFC107' }]}
+        >
           <Text style={styles.filterText}>Pendente</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleStatusFilter('Não Enviado')} style={[styles.filterButton, { backgroundColor: '#CC0000' }]}>
+        <TouchableOpacity
+          onPress={() => setSelectedStatus('Não Enviado')}
+          style={[styles.filterButton, { backgroundColor: '#CC0000' }]}
+        >
           <Text style={styles.filterText}>Não Enviado</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleStatusFilter(null)} style={[styles.filterButton, { backgroundColor: 'gray' }]}>
+        <TouchableOpacity
+          onPress={() => setSelectedStatus(null)}
+          style={[styles.filterButton, { backgroundColor: 'gray' }]}
+        >
           <Text style={styles.filterText}>Todos</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Lista de mensagens */}
       <FlatList
         data={filteredData}
-        renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        renderItem={renderItem}
       />
-    </SafeAreaView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF'
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -171,51 +129,21 @@ const styles = StyleSheet.create({
     margin: 20,
     height: 50,
   },
-  searchIcon: {
-    marginRight: 10,
-    color: '#005FED',
-  },
-  searchBar: {
-    flex: 1,
-    color: '#000',
-  },
-  item: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    marginVertical: 8,
-    marginHorizontal: 16,
-    overflow: 'hidden',
-  },
-  bar: {
-    width: 10, // Largura da barra colorida à esquerda
-  },
-  textContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  tema: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  subtext: {
-    fontSize: 16,
-    color: '#000',
-    marginTop: 4,
-  },
+  searchIcon: { marginRight: 10, color: '#005FED' },
+  searchBar: { flex: 1, color: '#000' },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginBottom: 10,
   },
-  filterButton: {
-    padding: 13,
-    borderRadius: 15,
+  filterButton: { padding: 13, borderRadius: 15 },
+  filterText: { fontWeight: 'bold', color: 'white' },
+  item: {
+    padding: 16,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f4f4f4',
   },
-  filterText: {
-    fontWeight: 'bold',
-    color: 'white',
-  },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
-
-export default App;
-

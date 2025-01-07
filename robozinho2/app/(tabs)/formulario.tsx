@@ -1,79 +1,74 @@
 import React from 'react';
-import { StyleSheet, TextInput, Alert, TouchableOpacity, Text, View } from 'react-native';
+import {
+  StyleSheet,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+  Text,
+  View,
+} from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { send } from '@emailjs/react-native';
-
-import appendDataToSheet from '@/credentials/googleSheetsService'; // Importe o serviço criado
-
-// const handleSubmit = async () => {
-//   const data = [destinatario, assunto, mensagem, dataParaEnvio]; // Dados do formulário
-//   try {
-//     await appendDataToSheet(data);
-//     alert("Dados cadastrados com sucesso!");
-//   } catch (error) {
-//     alert("Erro ao cadastrar os dados.");
-//     console.error(error);
-//   }
-// };
+import axios from 'axios';
+import { useMessages } from './MessagesContext';
 
 // Validação de formulário
-const schema = yup.object().shape({
-  destinatario: yup.string().email('Digite um e-mail válido').required('Destinatário é obrigatório'),
-  assunto: yup.string().required('Assunto é obrigatório'),
-  mensagem: yup.string().required('Mensagem é obrigatória'),
-  envio: yup.string().required('Data de envio é obrigatória'),
-  obs: yup.string().optional(),
-});
-
 type FormData = {
-  destinatario: string;
   assunto: string;
+  destinatario: string;
   mensagem: string;
   envio: string;
-  obs?: string; // Campo opcional
 };
 
-// Função para enviar os dados por e-mail via EmailJS
-function Submit(data: FormData) {
-  send(
-    'gmailMessage',    // Substitua pelo seu Service ID do EmailJS
-    'template_0vvy7bk',   // Substitua pelo Template ID criado no EmailJS
-    {
-      destinatario: data.destinatario,
-      assunto: data.assunto,
-      mensagem: data.mensagem,
-      envio: data.envio,
-      obs: data.obs || '',
-    },
-    {
-      publicKey: 'XG5SZd2iXVfm7_JUi', // Substitua pela Public Key obtida no EmailJS
-    }
-  )
-    .then((result) => {
-      console.log('Email enviado com sucesso:', result.status, result.text);
-      Alert.alert('Sucesso', 'Email enviado com sucesso!');
-    })
-    .catch((error) => {
-      console.log('Erro ao enviar e-mail:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao enviar o email.');
-    });
+const schema = yup.object().shape({
+  assunto: yup.string().required('Assunto é obrigatório'),
+  destinatario: yup
+    .string()
+    .email('Digite um e-mail válido')
+    .required('Destinatário é obrigatório'),
+  mensagem: yup.string().required('Mensagem é obrigatória'),
+  envio: yup.string().required('Data de envio é obrigatória'),
+});
+
+// Função para envio de dados
+async function sendDataToBackend(data: FormData) {
+  try {
+    const response = await axios.post('http://localhost:3000/submit', data);
+    Alert.alert('Sucesso', response.data.message || 'Dados enviados com sucesso!');
+  } catch (error) {
+    console.error('Erro ao enviar dados ao backend:', error);
+    Alert.alert('Erro', 'Falha ao enviar dados ao servidor.');
+  }
 }
 
-export default function TabTwoScreen() {
+export default function FormularioScreen() {
   const {
     control,
     handleSubmit,
-    reset,  // Usado para limpar o formulário
+    reset,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
+  } = useForm<FormData>({ resolver: yupResolver(schema) });
 
-  const onSubmit = (data: FormData) => {
-    Submit(data);
-    reset();  // Limpa o formulário após o envio
+  const { addMessage } = useMessages();
+
+  const onSubmit = async (data: FormData) => {
+    const newMessage = {
+      id: Math.random().toString(),
+      assunto: data.assunto,
+      destinatario: data.destinatario,
+      status: 'Enviado',
+    };
+
+    try {
+      // Envia os dados ao backend
+      await sendDataToBackend(data);
+      // Adiciona mensagem ao contexto
+      addMessage(newMessage);
+      reset();
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao processar a solicitação.');
+    }
   };
 
   return (
@@ -82,27 +77,13 @@ export default function TabTwoScreen() {
 
       <Controller
         control={control}
-        name="destinatario"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={[styles.input, errors.destinatario && styles.errorBorder]}
-            placeholder="DESTINATARIO"
-            value={value}
-            onChangeText={onChange}
-          />
-        )}
-      />
-      {errors.destinatario && <Text style={styles.errorText}>{errors.destinatario.message}</Text>}
-
-      <Controller
-        control={control}
         name="assunto"
         render={({ field: { onChange, value } }) => (
           <TextInput
+            placeholder="Assunto"
             style={[styles.input, errors.assunto && styles.errorBorder]}
-            placeholder="ASSUNTO"
-            value={value}
             onChangeText={onChange}
+            value={value}
           />
         )}
       />
@@ -110,15 +91,30 @@ export default function TabTwoScreen() {
 
       <Controller
         control={control}
+        name="destinatario"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Destinatário"
+            style={[styles.input, errors.destinatario && styles.errorBorder]}
+            onChangeText={onChange}
+            value={value}
+          />
+        )}
+      />
+      {errors.destinatario && (
+        <Text style={styles.errorText}>{errors.destinatario.message}</Text>
+      )}
+
+      <Controller
+        control={control}
         name="mensagem"
         render={({ field: { onChange, value } }) => (
           <TextInput
+            placeholder="Mensagem"
             style={[styles.textArea, errors.mensagem && styles.errorBorder]}
-            placeholder="MENSAGEM"
-            multiline={true}
-            numberOfLines={10}
-            value={value}
             onChangeText={onChange}
+            multiline
+            value={value}
           />
         )}
       />
@@ -129,10 +125,10 @@ export default function TabTwoScreen() {
         name="envio"
         render={({ field: { onChange, value } }) => (
           <TextInput
+            placeholder="Data para o envio"
             style={[styles.input, errors.envio && styles.errorBorder]}
-            placeholder="DATA PARA O ENVIO"
-            value={value}
             onChangeText={onChange}
+            value={value}
           />
         )}
       />
@@ -146,59 +142,34 @@ export default function TabTwoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 25,
-    justifyContent: 'center',
-    backgroundColor: '#ffff'
-  },
+  container: { flex: 1, padding: 25, justifyContent: 'center', backgroundColor: '#fff' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   input: {
     height: 50,
     borderColor: '#959595',
     borderWidth: 1,
     borderRadius: 10,
-    marginBottom: 20,
-    paddingHorizontal: 15,
-    color: '#000000',
-    backgroundColor: '#FFFFFF',
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
   textArea: {
     height: 100,
     borderColor: '#959595',
     borderWidth: 1,
     borderRadius: 10,
-    marginBottom: 20,
+    marginBottom: 15,
     paddingHorizontal: 10,
-    color: '#000000',
-    backgroundColor: '#FFFFFF',
     verticalAlign: 'top',
   },
   button: {
     height: 50,
     backgroundColor: '#080165',
-    borderRadius: 10,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    alignItems: 'center',
+    borderRadius: 10,
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: '#FF0000',
-    marginBottom: 10,
-  },
-  errorBorder: {
-    borderColor: '#FF0000',
-  },
-  title: {
-    color: '#082591',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  errorText: { color: '#ff0000', marginBottom: 10 },
+  errorBorder: { borderColor: '#ff0000' },
 });
