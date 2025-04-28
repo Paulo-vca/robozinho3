@@ -39,7 +39,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
           style={styles.helpLink}
           href="https://docs.expo.io/get-started/create-a-new-app/#opening-the-app-on-your-phonetablet">
           <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
-            Não toque aqui!
+            Não toque!
           </Text>
         </ExternalLink>
       </View>

@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "../backend/credentials/googleSheetsService.tsx"  ]
+, "../backend/credentialsD/googleSheetsService.tsx", "app/App.js", "app.js"  ]
 }

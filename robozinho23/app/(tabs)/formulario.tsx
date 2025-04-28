@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; 
 import {
   StyleSheet,
   TextInput,
@@ -7,11 +7,20 @@ import {
   Text,
   View,
 } from 'react-native';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
-import { useMessages } from './MessagesContext';
+import { useMessages } from '../../contexts/MessagesContext';
+import { useAuth } from '../AuthContext';
+import EmailGroupModal from '../mod/modal'; // Importe o modal de grupos
+
+// Tipagem do grupo de e-mails
+type Group = {
+  name: string;
+  emails: string[];
+};
 
 // Validação de formulário
 type FormData = {
@@ -23,10 +32,7 @@ type FormData = {
 
 const schema = yup.object().shape({
   assunto: yup.string().required('Assunto é obrigatório'),
-  destinatario: yup
-    .string()
-    .email('Digite um e-mail válido')
-    .required('Destinatário é obrigatório'),
+  destinatario: yup.string().required('Destinatário é obrigatório'),
   mensagem: yup.string().required('Mensagem é obrigatória'),
   envio: yup.string().required('Data de envio é obrigatória'),
 });
@@ -46,11 +52,16 @@ export default function FormularioScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<FormData>({ resolver: yupResolver(schema) });
 
   const { addMessage } = useMessages();
+  const { logout } = useAuth();
+
+  const [isModalVisible, setModalVisible] = useState(false); // Estado para exibir modal
+  const [groups, setGroups] = useState<Group[]>([]); // Lista de grupos de e-mail
 
   const onSubmit = async (data: FormData) => {
     const newMessage = {
@@ -61,15 +72,23 @@ export default function FormularioScreen() {
     };
 
     try {
-      // Envia os dados ao backend
       await sendDataToBackend(data);
-      // Adiciona mensagem ao contexto
       addMessage(newMessage);
       reset();
     } catch (error) {
       Alert.alert('Erro', 'Falha ao processar a solicitação.');
     }
   };
+
+  const handleGroupSelection = (emails: string[]) => {
+    const emailString = emails.join(';'); // Junta os e-mails com ";"
+    setValue('destinatario', emailString); // Atualiza o campo destinatário
+    setModalVisible(false); // Fecha o modal
+  };
+
+  function closeModal(): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <View style={styles.container}>
@@ -89,18 +108,23 @@ export default function FormularioScreen() {
       />
       {errors.assunto && <Text style={styles.errorText}>{errors.assunto.message}</Text>}
 
-      <Controller
-        control={control}
-        name="destinatario"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            placeholder="Destinatário"
-            style={[styles.input, errors.destinatario && styles.errorBorder]}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-      />
+      <View style={styles.inputRow}>
+        <Controller
+          control={control}
+          name="destinatario"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              placeholder="Destinatário"
+              style={[styles.input, errors.destinatario && styles.errorBorder, styles.flexGrow]}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <AntDesign name="addusergroup" size={28} color="#080165" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
       {errors.destinatario && (
         <Text style={styles.errorText}>{errors.destinatario.message}</Text>
       )}
@@ -137,6 +161,17 @@ export default function FormularioScreen() {
       <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutButtonText}>Sair</Text>
+      </TouchableOpacity>
+
+      <EmailGroupModal
+        visible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        groups={groups}
+        onSelectGroupEmails={handleGroupSelection}
+        setGroups={setGroups}/>
     </View>
   );
 }
@@ -153,6 +188,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#fff',
   },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  flexGrow: { flex: 1 },
+  icon: { marginLeft: 10 },
   textArea: {
     height: 100,
     borderColor: '#959595',
@@ -170,6 +212,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  logoutButton: {
+    height: 50,
+    backgroundColor: '#ff4d4d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginTop: 15,
+  },
+  logoutButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   errorText: { color: '#ff0000', marginBottom: 10 },
   errorBorder: { borderColor: '#ff0000' },
 });

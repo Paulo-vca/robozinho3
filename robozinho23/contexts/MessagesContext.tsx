@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState } from 'react';
 
 export type Message = {
   id: string;
-  assunto: string;
   destinatario: string;
+  assunto: string;
   status: string;
 };
 
@@ -36,4 +36,3 @@ export const useMessages = () => {
   return context;
 };
 
-export default MessagesProvider;
